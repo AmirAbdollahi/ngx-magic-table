@@ -1,57 +1,72 @@
 import {
-  Component, OnInit, HostListener, Input, Output, EventEmitter,
-  forwardRef, ChangeDetectorRef, ChangeDetectionStrategy
-} from '@angular/core';
-import { ListItemDropdown, IDropdownSettings } from '../models/multiselect.model';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
+  Component,
+  OnInit,
+  HostListener,
+  Input,
+  Output,
+  EventEmitter,
+  forwardRef,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+} from "@angular/core";
+import {
+  ListItemDropdown,
+  IDropdownSettings,
+} from "../models/multiselect.model";
+import { NG_VALUE_ACCESSOR, ControlValueAccessor } from "@angular/forms";
 
 export const DROPDOWN_CONTROL_VALUE_ACCESSOR: any = {
   provide: NG_VALUE_ACCESSOR,
   useExisting: forwardRef(() => NgxMultiselectDropdownComponent),
-  multi: true
+  multi: true,
 };
-const noop = () => { };
+const noop = () => {};
 
 @Component({
-  selector: 'lib-ngx-multiselect-dropdown',
-  templateUrl: './ngx-multiselect-dropdown.component.html',
-  styleUrls: ['./ngx-multiselect-dropdown.component.scss'],
+  selector: "lib-ngx-multiselect-dropdown",
+  templateUrl: "./ngx-multiselect-dropdown.component.html",
+  styleUrls: ["./ngx-multiselect-dropdown.component.scss"],
   providers: [DROPDOWN_CONTROL_VALUE_ACCESSOR],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgxMultiselectDropdownComponent implements ControlValueAccessor {
-
   _data: Array<ListItemDropdown> = [];
   selectedItems: Array<ListItemDropdown> = [];
   isDropdownOpen = false;
   _settings: IDropdownSettings;
-  _placeholder = 'Select';
+  _placeholder = "Select";
   filter: ListItemDropdown = new ListItemDropdown(this.data);
-
+  tempDataValue: Array<any> = null;
   defaultSettings: IDropdownSettings = {
     singleSelection: false,
-    idField: 'id',
-    textField: 'text',
-    parentField: 'parent',
+    idField: "id",
+    textField: "text",
+    parentField: "parent",
     enableCheckAll: true,
-    selectAllText: 'Select All',
-    unSelectAllText: 'UnSelect All',
+    selectAllText: "Select All",
+    unSelectAllText: "UnSelect All",
     allowSearchFilter: false,
     limitSelection: -1,
     clearSearchFilter: true,
     maxHeight: 197,
     itemsShowLimit: 999999999999,
-    searchPlaceholderText: 'Search',
-    noDataAvailablePlaceholderText: 'No data available',
+    searchPlaceholderText: "Search",
+    noDataAvailablePlaceholderText: "No data available",
     closeDropDownOnSelection: false,
-    showSelectedItemsAtTop: false
+    showSelectedItemsAtTop: false,
   };
 
-  @Output('onFilterChange') onFilterChange: EventEmitter<ListItemDropdown> = new EventEmitter<any>();
-  @Output('onSelect') onSelect: EventEmitter<Array<ListItemDropdown>> = new EventEmitter<Array<any>>();
-  @Output('onDeSelect') onDeSelect: EventEmitter<Array<ListItemDropdown>> = new EventEmitter<Array<any>>();
-  @Output('onSelectAll') onSelectAll: EventEmitter<Array<ListItemDropdown>> = new EventEmitter<Array<any>>();
-  @Output('onDeSelectAll') onDeSelectAll: EventEmitter<Array<ListItemDropdown>> = new EventEmitter<Array<any>>();
+  @Output("onFilterChange") onFilterChange: EventEmitter<ListItemDropdown> =
+    new EventEmitter<any>();
+  @Output("onSelect") onSelect: EventEmitter<Array<ListItemDropdown>> =
+    new EventEmitter<Array<any>>();
+  @Output("onDeSelect") onDeSelect: EventEmitter<Array<ListItemDropdown>> =
+    new EventEmitter<Array<any>>();
+  @Output("onSelectAll") onSelectAll: EventEmitter<Array<ListItemDropdown>> =
+    new EventEmitter<Array<any>>();
+  @Output("onDeSelectAll") onDeSelectAll: EventEmitter<
+    Array<ListItemDropdown>
+  > = new EventEmitter<Array<any>>();
   // @Output('onResetTable') onResetTable: EventEmitter<Array<ListItemDropdown>> = new EventEmitter<Array<any>>();
 
   private onTouchedCallback: () => void = noop;
@@ -64,7 +79,7 @@ export class NgxMultiselectDropdownComponent implements ControlValueAccessor {
     if (value) {
       this._placeholder = value;
     } else {
-      this._placeholder = 'Select';
+      this._placeholder = "Select";
     }
   }
   @Input()
@@ -74,33 +89,32 @@ export class NgxMultiselectDropdownComponent implements ControlValueAccessor {
     } else {
       this._settings = Object.assign(this.defaultSettings);
     }
+    if (this.tempDataValue != null) {
+      this.mapData(this.tempDataValue);
+    }
   }
 
   @Input()
   public set data(value: Array<any>) {
+    this.tempDataValue = value;
     if (!value) {
       this._data = [];
-    } else {
-      // const _items = value.filter((item: any) => {
-      //   if (typeof item === 'string' || (typeof item === 'object' && item && item[this._settings.idField] && item[this._settings.textField])) {
-      //     return item;
-      //   }
-      // });
-      this._data = value.map(
-        (item: any) =>
-          typeof item === 'string'
-            ? new ListItemDropdown(item)
-            : new ListItemDropdown({
-              id: item[this._settings.idField],
-              text: item[this._settings.textField],
-              parent: item[this._settings.parentField]
-            })
-      );
+    } else if (this._settings != null) {
+      this.mapData(value);
     }
   }
 
-
-
+  private mapData(value: Array<any>) {
+    this._data = value.map((item: any) =>
+      typeof item === "string"
+        ? new ListItemDropdown(item)
+        : new ListItemDropdown({
+            id: item[this._settings.idField],
+            text: item[this._settings.textField],
+            parent: item[this._settings.parentField],
+          })
+    );
+  }
   writeValue(obj: any): void {
     if (obj !== undefined && obj !== null && obj.length > 0) {
       if (this._settings.singleSelection) {
@@ -108,27 +122,26 @@ export class NgxMultiselectDropdownComponent implements ControlValueAccessor {
           if (obj.length >= 1) {
             const firstItem = obj[0];
             this.selectedItems = [
-              typeof firstItem === 'string'
+              typeof firstItem === "string"
                 ? new ListItemDropdown(firstItem)
                 : new ListItemDropdown({
-                  id: firstItem[this._settings.idField],
-                  text: firstItem[this._settings.textField],
-                  parent: firstItem[this._settings.parentField]
-                })
+                    id: firstItem[this._settings.idField],
+                    text: firstItem[this._settings.textField],
+                    parent: firstItem[this._settings.parentField],
+                  }),
             ];
           }
         } catch (e) {
           // console.error(e.body.msg);
         }
       } else {
-        const _data = obj.map(
-          (item: any) =>
-            typeof item === 'string'
-              ? new ListItemDropdown(item)
-              : new ListItemDropdown({
+        const _data = obj.map((item: any) =>
+          typeof item === "string"
+            ? new ListItemDropdown(item)
+            : new ListItemDropdown({
                 id: item[this._settings.idField],
                 text: item[this._settings.textField],
-                parent: item[this._settings.parentField]
+                parent: item[this._settings.parentField],
               })
         );
         if (this._settings.limitSelection > 0) {
@@ -142,6 +155,7 @@ export class NgxMultiselectDropdownComponent implements ControlValueAccessor {
     }
     this.onChangeCallback(obj);
   }
+
   registerOnChange(fn: any): void {
     this.onChangeCallback = fn;
   }
@@ -151,9 +165,6 @@ export class NgxMultiselectDropdownComponent implements ControlValueAccessor {
   // setDisabledState?(isDisabled: boolean): void {
   //   throw new Error("Method not implemented.");
   // }
-
-
-
 
   constructor(private cdr: ChangeDetectorRef) {
     this.buttonListColumnStyle = "btn btn-outline-info";
@@ -180,7 +191,7 @@ export class NgxMultiselectDropdownComponent implements ControlValueAccessor {
     return item.id;
   }
   // Set touched on blur
-  @HostListener('blur')
+  @HostListener("blur")
   public onTouched() {
     this.closeDropdown();
     this.onTouchedCallback();
@@ -190,7 +201,7 @@ export class NgxMultiselectDropdownComponent implements ControlValueAccessor {
     this.isDropdownOpen = false;
     // clear search text
     if (this._settings.clearSearchFilter) {
-      this.filter.text = '';
+      this.filter.text = "";
     }
   }
   toggleDropdown(evt) {
@@ -223,11 +234,10 @@ export class NgxMultiselectDropdownComponent implements ControlValueAccessor {
     return this._data.length === this.selectedItems.length;
   }
 
-
   emittedValue(val: any): any {
     const selected = [];
     if (Array.isArray(val)) {
-      val.map(item => {
+      val.map((item) => {
         if (item.id === item.text) {
           selected.push(item.text);
         } else {
@@ -266,7 +276,10 @@ export class NgxMultiselectDropdownComponent implements ControlValueAccessor {
       return false;
     }
     const found = this.isSelected(item);
-    const allowAdd = this._settings.limitSelection === -1 || (this._settings.limitSelection > 0 && this.selectedItems.length < this._settings.limitSelection);
+    const allowAdd =
+      this._settings.limitSelection === -1 ||
+      (this._settings.limitSelection > 0 &&
+        this.selectedItems.length < this._settings.limitSelection);
     if (!found) {
       if (allowAdd) {
         this.addSelected(item);
@@ -274,7 +287,10 @@ export class NgxMultiselectDropdownComponent implements ControlValueAccessor {
     } else {
       this.removeSelected(item);
     }
-    if (this._settings.singleSelection && this._settings.closeDropDownOnSelection) {
+    if (
+      this._settings.singleSelection &&
+      this._settings.closeDropDownOnSelection
+    ) {
       this.closeDropdown();
     }
   }
@@ -284,14 +300,18 @@ export class NgxMultiselectDropdownComponent implements ControlValueAccessor {
       this.selectedItems = [];
       this.selectedItems.push(item);
     } else {
-      var parentItem = this._data.filter(x => x.text === item.parent);
-      var parentItemseleted = this.selectedItems.filter(x => x.text === item.parent);
+      var parentItem = this._data.filter((x) => x.text === item.parent);
+      var parentItemseleted = this.selectedItems.filter(
+        (x) => x.text === item.parent
+      );
       if (parentItem.length > 0 && parentItemseleted.length <= 0) {
         this.selectedItems.push(parentItem[0]);
       }
 
-      var childItem = this._data.filter(x => x.parent === item.text);
-      var childItemseleted = this.selectedItems.filter(x => x.parent === item.text);
+      var childItem = this._data.filter((x) => x.parent === item.text);
+      var childItemseleted = this.selectedItems.filter(
+        (x) => x.parent === item.text
+      );
       if (childItem.length > 0 && childItemseleted.length <= 0) {
         this.selectedItems.push(childItem[0]);
       }
@@ -304,19 +324,29 @@ export class NgxMultiselectDropdownComponent implements ControlValueAccessor {
 
   removeSelected(itemSel: ListItemDropdown) {
     if (this.selectedItems.length > 1) {
-      this.selectedItems.forEach(item => {
+      this.selectedItems.forEach((item) => {
         if (itemSel.id === item.id) {
-          if (this.selectedItems.filter(x => x.parent === item.parent).length > 1) {
+          if (
+            this.selectedItems.filter((x) => x.parent === item.parent).length >
+            1
+          ) {
             this.selectedItems.splice(this.selectedItems.indexOf(item), 1);
-            var childs = this.selectedItems.filter(x => x.parent === item.text);
+            var childs = this.selectedItems.filter(
+              (x) => x.parent === item.text
+            );
             for (let index = 0; index < childs.length; index++) {
               const element = childs[index];
-              if (this.selectedItems.indexOf(element) !== -1 && this.selectedItems.length > 1) {
-                this.selectedItems.splice(this.selectedItems.indexOf(element), 1);
+              if (
+                this.selectedItems.indexOf(element) !== -1 &&
+                this.selectedItems.length > 1
+              ) {
+                this.selectedItems.splice(
+                  this.selectedItems.indexOf(element),
+                  1
+                );
               }
             }
           }
-
         }
       });
     }
@@ -336,14 +366,11 @@ export class NgxMultiselectDropdownComponent implements ControlValueAccessor {
 
   isSelected(clickedItem: ListItemDropdown) {
     let found = false;
-    this.selectedItems.forEach(item => {
+    this.selectedItems.forEach((item) => {
       if (clickedItem.id === item.id) {
         found = true;
       }
     });
     return found;
   }
-
-
-
 }

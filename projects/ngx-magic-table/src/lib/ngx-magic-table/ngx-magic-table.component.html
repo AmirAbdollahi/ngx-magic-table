@@ -93,7 +93,7 @@
   </div>
   <div id="MainMagicPagingId" class="btn-group paging">
     <lib-ngx-multiselect-dropdown class="pagingInline" [buttonListColumnStyle]="buttonSaveTableStyle" (change)="onItemSelect($event)"
-      [placeholder]="'Select Columns'" [data]="dropdownList" [(ngModel)]="dropdownselectedItems" [settings]="dropdownSettings"
+      [placeholder]="'Select Columns'" [settings]="dropdownSettings" [data]="dropdownList" [(ngModel)]="dropdownselectedItems"
       (onSelect)="onItemSelect($event)" (onDeSelect)="onItemDeSelect($event)" (onSelectAll)="onSelectAll($event)" >
     </lib-ngx-multiselect-dropdown>
     <div class="pagingInline" style="margin-left: 2px; margin-right: 2px">
